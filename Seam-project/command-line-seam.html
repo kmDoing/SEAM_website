@@ -1,0 +1,106 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="content-type" content="text/html; charset=utf-8"></meta>
+
+<title>Semi-Automated Ontology Management Tool (SEAM)</title>
+
+<meta name="keywords" content=""></meta>
+<meta name="description" content=""></meta>
+
+<link rel="stylesheet" type="text/css" href="../style.css"></link>
+</head>
+<body>
+
+<div id="container">
+
+	<h1>Semi-Automated Ontology Management Tool (SEAM)</h1>
+
+<div id="navcont">
+    <ul id="nav">
+		<li><a href="../index.html">Home</a></li>
+        <li><a href="./seam-home.html">SEAM-home</a></li>
+        <li><a href="../Files/CommandLineSEAM.docx">SEAM-instructions</a></li>
+        <li><a href="./seam-database-tables-and-their-contents.html">Tables &amp; Contents</a></li>
+		<li><a href="./seam-functions.html">Functions</a></li>
+        <li><a href="#">Contact</a></li>
+    </ul></div>    
+    <div id="content_main">
+
+<p>TEXT FOR THE APPLICATION CONTROL TAB:</p>
+<p>&#160;</p>
+<p><b>Semi-Automated Ontology Management Tool (SEAM)</b></p>
+<p>&#160;</p>
+<p>This tool helps ontology development by automatically extracting terms, concepts (i.e., groups of synonymous terms), and relations from narrative text. Users can then edit this automatically extracted information and export ontologies.</p>
+<p>&#160;</p>
+<p align="center"><b>Quick start:</b></p>
+<h3 style="text-decoration: underline;">Get the files</h3>
+<ul>
+	<li>Download the SEAM.jar file:
+		<ul>
+			<li><a href="http://consumerhealthvocab.chpc.utah.edu/SEAM_website/">http://consumerhealthvocab.chpc.utah.edu/SEAM_website/</a></li>
+		</ul>
+	</li>
+</ul>
+
+<h3 style="text-decoration: underline;">Set up infrastructure</h3>
+<ul>
+	<li>Make sure you have a UMLS license and installation. Instructions are here:
+		<ul>
+			<li><a href="https://utslogin.nlm.nih.gov/cas/login?service=https%3A%2F%2Futs.nlm.nih.gov%3A443%2F%2Fj_spring_cas_security_check">
+			https://utslogin.nlm.nih.gov/cas/login</a></li>
+		</ul>
+	</li>
+	<li>Make sure you have MySQL installed. Instructions are here:
+		<ul>
+			<li><a href="http://dev.mysql.com/doc/refman/5.1/en/installing.html">http://dev.mysql.com/doc/refman/5.1/en/installing.html</a></li>
+		</ul>
+	</li>
+	<li>Create a schema (<i>schemaName</i>).</li>
+	<li>Create an account and give it privileges on the schema you just created (<i>username</i>, <i>password</i>).</li>
+</ul>
+<p>&#160;</p>
+<h3 style="text-decoration: underline;">Determine parameters</h3>
+<ul>
+	<li>The location of the biomedical text corpus to extract content from either directory path or database name (<i>bioCorpusLocation</i>).
+	</li>
+	<li>the types of files contained in the biomedical corpus, db, pdf, txt or xml (<i>bioFileType</i>).
+	</li>
+	<li>The location of the clinical text corpus to extract content from either directory path or database name (<i>clinCorpusLocation</i>).
+	</li>
+	<li>The types of files contained in the clinical corpus, db, pdf, txt or xml (<i>clinFileType</i>).
+	</li>
+	<li>The thresholds you would like to use when calculating:
+		<ul>
+			<li>Minimum Document frequency, default is 5% (<i>docFreq</i>).</li>
+			<li>TFxIDF cosine similarity, default 0.95 (<i>cosSim-tfidf</i>).</li>
+			<li>Context vector cosine similarity, default 0.95 (<i>cosSim-con</i>).</li>
+			<li>ASIUM consolidation, default 0.5 (<i>asium</i>). ***this is currently not used***</li>
+		</ul>
+	</li>
+	<li>The directory in which to put the output term, synonyms and hierarchical relationships .csv files (<i>outDirectory</i>).
+	</li>
+</ul>
+<p>&#160;</p>
+<h3 style="text-decoration: underline;">Run the files</h3>
+<ul>
+	<li>On the command line in the &#8220;SEAMt&#8221; folder enter:
+		<ul>
+			<li>&gt;java &#8211;jar SEAM.jar schemaName username password bioCorpusLocation bioFileType 
+			clinCorpusLocation clinFileType docFreq cosSim-tfidf cosSim-con asium outDirectory</li>
+		</ul>
+	</li>
+</ul>
+	</div>
+    
+    <div id="nav_main">
+        <h4>The SEAM Project is sponsored by:</h4>
+        <img src="./images/Ulogo_sm.png" />
+    </div>
+    
+</div>
+
+<div id="footer">
+         <div id="copyright">&copy; SEAM Project - Site Design based on a template by <a href="http://sean-pollock.com" target="_blank">Sean Pollock</b></a> and <a href="http://zymic.com" target="_blank">Zymic</a>.
+</div>
+</body></html>

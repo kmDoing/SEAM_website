@@ -1,0 +1,135 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="content-type" content="text/html; charset=utf-8"></meta>
+<title>Semi-Automated Ontology Management Tool (SEAM)</title>
+<link rel="stylesheet" type="text/css" href="../style.css"></link>
+<meta name="keywords" content=""></meta>
+<meta name="description" content=""></meta>
+
+</head>
+<body>
+
+<div id="container">
+
+	<h1>SEAM Database tables and their contents</h1>
+
+<div id="navcont">
+    <ul id="nav">
+		<li><a href="../index.html">Home</a></li>
+        <li><a href="./seam-home.html">SEAM-home</a></li>
+        <li><a href="./command-line-seam.html">Command Line</a></li>
+		<li><a href="./seam-functions.html">Functions</a></li>
+        <li><a href="#">Contact</a></li>
+		<li><a href="https://svn.chpc.utah.edu/repo/SEAM_SVN" target="_blank">SVN</a></li>
+    </ul></div>    
+    <div id="content_main">
+<ol>
+	<li> Downloaded files:
+		<ol type="a">
+			<li>DateDownloaded: the date the file was entered into the table.</li>
+			<li>Filename: the name of the file.</li>
+			<li>Content: the text found in the file.</li>
+			<li>ID: a table id number.</li>
+			<li>isProcessed: a bit indicating if the file has been processed by the SEAM system.</li>
+		</ol>
+		</li>
+	<li> NgramInfo: this table is created during the parse of the text from the file.
+		<ol type="a">
+			<li>ID: a table id number.</li>
+			<li>Ngram: the text of the n-gram.</li>
+			<li>Frequency: the total number of times the n-gram is found in the corpus.</li>
+			<li>CUI: UMLS Metathesaurus &#8220;concept unique identifier.&#8221; This column is set to &#8216;0&#8217;, if the n-gram is not found in the Metathesaurus.</li>
+			<li>DocFreq: the number of documents in which the n-gram was found. </li>
+			<li>Information about the construction of the n-gram used in calculation of termhood score and c-value.
+				<ol type="i">
+					<li>In_NP: if the n-gram is in a noun phrase.</li>
+					<li>firstPOS_N: if the part-of-speech (POS) of the first word in the n-gram is noun.</li>
+					<li>firstPOS_ADJ: if the part-of-speech (POS) of the first word in the n-gram is adjective.</li>
+					<li>firstPOS_ADVERB: if the part-of-speech (POS) of the first word in the n-gram is adverb.</li>
+					<li>lastPOS_N: if the part-of-speech (POS) of the last word in the n-gram is noun.</li>
+					<li>lastPOS_ADJ: if the part-of-speech (POS) of the last word in the n-gram is adjective.</li>
+					<li>lastPOS_ADVERB: if the part-of-speech (POS) of the last word in the n-gram is adverb.</li>
+					<li>firstPOS_VERB: if the part-of-speech (POS) of the first word in the n-gram is verb.</li>
+					<li>lastPOS_ADJ: if the part-of-speech (POS) of the last word in the n-gram is verb.</li>
+					<li>Length: the number of words in the n-gram (n).</li>
+					<li>Number_supras: the number of n-grams, which contain the current n-gram.</li>
+					<li>Freq_in_supras: the sum of the frequencies of the n-grams, which contain the current n-gram.</li>
+					<li>Freq_in_subs: the sum of the frequencies of all n-grams, which contain words in the current n-gram.</li>
+					<li>fromChunk: if the n-gram is part of a phrase asidentified by the chunker.</li>
+				</ol>
+			</li>
+			<li>The combination of n-gram and CUI is a unique key. N-grams may be matched to more than one CUI, but each n-gram-CUI pair must be unique.</li>
+		</ol>
+	</li>
+	<li>AllSent: this table is also created during the parse of the documents. It contains every sentence, which contained an n-gram from the NgramInfo table.
+		<ol type="a">
+			<li>ID: a table id number.</li>
+			<li>Term: the term of interest.</li>
+			<li>CUI: the UMLS Metathesaurus &#8220;concept unique identifier.&#8221; If the phrase was not found in the Metathesaurus, this column is set to &#8216;0&#8217;. Phrases may be matched to more than one CUI across different rows of the table, but not within the same row.</li>
+			<li>Sentence: the sentence in which the term was found.</li>
+			<li>Sent_POS: the parts-of-speech for each of the words in the sentence.</li>
+		</ol>
+	</li>
+	<li>ExplanationInfo: this table is also created during the parse of the documents. This table contains pairs of noun phrases, which occurred in order in a sentence. A single sentence could contain more than one pair.
+		<ol type="a">
+			<li>ID: a table id number.</li>
+			<li>npOne: the first noun phrase found in the sentence.</li>
+			<li>npTwo: the second noun phrase.</li>
+			<li>Pattern: the words from the sentence that were found between the noun phrases.</li>
+			<li>cuiOne: the UMLS Metathesaurus &#8220;concept unique identifier&#8221; for the first noun phrase. If the phrase was not found in the Metathesaurus, this column is set to &#8216;0&#8217;. Phrases may be matched to more than one CUI across different rows of the table, but not within the same row.</li>
+			<li>cuiTwo: the UMLS Metathesaurus &#8220;concept unique identifier&#8221; for the second noun phrase.</li>
+			<li>Frequency: the number of times the npOne-pattern-npTwo triplet was found in the corpus. Since the cuiOne, cuiTwo pair is a unique key, the frequency also reflects the number of times the pair from the current row was found, regardless of pattern.</li>
+			<li>Pattern_POS: the parts-of-speech of the words or symbols in the pattern.</li>
+		</ol>
+	</li>
+	<li>TFxIDF: this is the final table created during the parse of the documents. It contains each n-gram and the number of times it occurred in each document. As the documents are processed a column for each one is added to the table.
+		<ol type"a">
+			<li>ID: a table id number.</li>
+			<li>CUI: the UMLS Metathesaurus &#8220;concept unique identifier.&#8221; If the phrase was not found in the Metathesaurus, this column is set to &#8216;0&#8217;. Phrases may be matched to more than one CUI across different rows of the table, but not within the same row.</li>
+			<li>Term: the phrase (n-gram) of interest.</li>
+			<li>DocFreq: the number of documents in which the term appears. This is calculated after the entire corpus has been processed.</li>
+			<li>Frequency: the total number of times the term was found across the entire corpus. This, too, is calculated after the entrie corpus has been processed.</li>
+			<li>The remaining columns represent the documents in the corpus.</li>
+		</ol>
+	</li>
+	<li>PotentialTerms: this table contains the terms (processed n-grams), which are likely to be valid terms. Determining if the term is medically related and of interest is done using the information in this table. It is not ensured by a term being part of this table.
+		<ol type="a">
+			<li>ID: a table id.</li>
+			<li>Term: the phrase/n-gram identified.</li>
+			<li>CUI: the UMLS Metathesaurus &#8220;concept unique identifier.&#8221; If the phrase was not found in the Metathesaurus, this column is set to &#8216;0&#8217;. Phrases may be matched to more than one CUI across different rows of the table, but not within the same row.</li>
+			<li>isTerm: the termhood score calculated for the term.</li>
+			<li>cScore: the c-value score calculated for the term.</li>
+			<li>Frequency: the total number of times the term was found in the corpus.</li>
+			<li>docFreq: the number of documents in which the term appeared.</li>
+			<li>In_NP: whether or not the term was part of a noun phrase.</li>
+		</ol>
+	</li>
+	<li>Synonyms_cluster: This table contains information about groups of terms related by synonymy and pairs of terms either hierarchically related (&#8216;is a&#8217;) or meriologically related (&#8216;part of&#8217;).
+		<ol type="a">
+			<li>ID: a table id.</li>
+			<li>Cluster_name: the preferred term for a group of synonyms or the higher level term for a pair of related terms.</li>
+			<li>CUI: the UMLS Metathesaurus &#8220;concept unique identifier.&#8221; If the phrase was not found in the Metathesaurus, this column is set to &#8216;0&#8217;. Phrases may be matched to more than one CUI across different rows of the table, but not within the same row.</li>
+			<li>Word: the term of interest in the synonym group or related pair.</li>
+			<li>Rel_CUI: the UMLS Metathesaurus &#8220;concept unique identifier&#8221; for the &#8220;word.&#8221; If the <i>word</i> was not found in the Metathesaurus, this column is set to &#8216;0&#8217;. <i>Words</i> may be matched to more than one CUI across different rows of the table, but not within the same row.</li>
+			<li>Count: the number of times the <i>word</i> was found associated either with the synonym group or as part of the related pair.</li>
+			<li>Type: the type of relationship the current row represents: synonymy, isa (hierarchy), part of (meriologic). </li>
+			<li>Recommended: if the relationship has been automatically recommended by the system.</li>
+			<li>UMLS_par_name: the UMLS preferred name for a parent term located using the semantic relations table from the Metathesaurus.</li>
+			<li>UMLS_par_cui: the UMLS Metathesaurus &#8220;concept unique identifier&#8221; for the UMLS parent term. </li>
+		</ol>
+	</li>
+</ol>
+	</div>
+    
+    <div id="nav_main">
+        <h4>The SEAM Project is sponsored by:</h4>
+        <img src="./images/Ulogo_sm.png" />
+    </div>
+    
+</div>
+
+<div id="footer">
+         <div id="copyright">&copy; SEAM Project - Site Design based on a template by <a href="http://sean-pollock.com" target="_blank">Sean Pollock</b></a> and <a href="http://zymic.com" target="_blank">Zymic</a>.
+</div></div>
+</body></html>

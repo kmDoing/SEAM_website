@@ -1,0 +1,122 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="content-type" content="text/html; charset=utf-8"></meta>
+<title>Semi-Automated Ontology Management Tool (SEAM)</title>
+<meta name="keywords" content=""></meta>
+<meta name="description" content=""></meta>
+<link rel="stylesheet" type="text/css" href="../style.css"></link>
+</head><body>
+
+<div id="container">
+
+	<h1>SEAM functions</h1>
+
+<div id="navcont">
+    <ul id="nav">
+		<li><a href="../index.html">Home</a></li>
+        <li><a href="./seam-home.html">SEAM-home</a></li>
+        <li><a href="./seam-database-tables-and-their-contents.html">Tables &amp; Contents</a></li>
+        <li><a href="./command-line-seam.html">Command Line</a></li>
+        <li><a href="#">Contact</a></li>
+		<li><a href="https://svn.chpc.utah.edu/repo/SEAM_SVN" target="_blank">SVN</a></li>
+    </ul></div>    
+    <div id="content_main">
+<p>Command line call: <code>SEAM(&#8220;workspaceName&#8221;,&#8221;username&#8221;,&#8221;password&#8221;,&#8221;corpusDirectory&#8221;,&#8221;filetype&#8221;,&#8221;docfreq_thld&#8221;,&#8221;tfidf_thld&#8221;,&#8221;context_thld&#8221;,&#8221;asium_thld&#8221;)</code></p>
+<p>&#160;</p>
+<ol>
+	<li>Create workspace
+		<ol type="a">
+			<li>The machine implementing this system will need to have a MySQL instance. </li>
+			<li>Create a database schema within MySQL. Give it any name you like.</li>
+			<li>Create a user account for your new schema. Allow them to INSERT, SELECT, DELETE, UPDATE, ALTER and CREATE.</li>
+			<li>Give the schema name, username and password to SEAM as the parameters for your workspace.</li>
+		</ol>
+	</li>
+	<li>Read in corpus files
+		<ol type="a">
+			<li>Create a directory of files (.pdf or .txt).</li>
+			<li>Give the directory name and file type to SEAM.</li>
+			<li>SEAM will read the files into the workspaceName.downloadedfiles DB table.</li>
+		</ol>
+	</li>
+	<li>Process Papers takes each document
+		<ol type="a">
+			<li>A column is created in the TFxIDF table for each document.</li>
+			<li>The OpenNLP tools are used to:
+				<ol  type="i">
+					<li>Detects sentence boundaries, with SentenceDetector, which uses the EnglishSD model.</li>
+					<li>Detects each token, with Tokenizer, which uses the EnglishTok model</li>
+					<li>Tags parts of speech with the PosTagger, which uses the cTAKES model.</li>
+					<li>Does a shallow parse to detect chunks, with TreebankChunker, which uses the EnglishChunk model.</li>
+				</ol>
+			</li>
+			<li>Noun and Verb phrases are identified and matched to UMLS.
+				<ol type="i">
+					<li>Phrases are normalized by the removal of numbers, symbols (including #), capitalization and determiners.</li>
+					<li>Using the Textractor system developed for the i2b2 challenge.</li>
+					<li>String matching to a Lucene index is performed, with a maximum of 10 hits.</li>
+					<li>The system looks for an exact match to the current phrase. If none is found it attempts to match a subset of the terms in the phrase. If this type of partial match is found, the cui is marked with an *.</li>
+				</ol>
+			</li>
+			<li>Each pair of noun phrases that occur in the same sentence are stored in the ExplanationInfo table, with the cui&#8217;s for the noun phrases and the text that appears between the noun phrases (pattern). This information is used for synonym and relationship extraction.</li>
+		</ol>
+	<li>The TFxIDF table is used to calculate the overall frequency of each term and the document frequency. That is the number of documents in which the term appears.</li>
+	<li>Terms are scored using cScore and Termhood values
+		<ol type="a">
+			<li>C-value was developed by (Frantzi, Ananiadou, &amp; Tsujii, 1998). C-value is calculated using the frequency of occurrence of the candidate term combined with its frequency of occurrence as part of other, longer candidate terms (supra-strings), along with the number of longer candidate terms and their lengths.</li>
+			<li>Termhood was developed by (Zeng et al., 2007). Termhood is a logistic regression equation. The features used to train the logistic-based model include parts of speech of term components, frequency of occurrence of candidate terms, as well as frequency of occurrence of said candidate terms in both larger and smaller (sub-strings) alternative candidate terms.</li>
+			<li>The frequency information for the supra- and sub- strings is time consuming to calculate so SEAM reports when this step is reached.</li>
+			<li>Scored terms, their cui&#8217;s, frequency and noun phrase information is stored in the PotentialTerms table.</li>
+		</ol>
+	<li>TFxIDF vectors are used to identify synonymous terms by determining the cosine similarity between the vectors. As described in (Heylen, Peirsman, Geeraerts, &amp; Speelman, 2008) and (Adomavicius &amp; Tuzhilin, 2005).
+		<ol type="a">
+			<li>The terms included in this calculation must meet a minimum standard of document frequency (docFreq_thld). This is due to the fact that many terms appear together in a single document and thus have a high cosine similarity measure. This threshold should increase as the number of documents increases.</li>
+			<li>The terms included are also limited to those that have been matched (either fully or partially) to UMLS. This restriction keeps the number of groups from being excessively large and helps limited the number of non-health related terms.</li>
+			<li>The terms with vectors closer than the threshold (tfidf_thld) passed to the program are collected into groups and entered into the SynRelGroups table (synonyms, relations groups). The first term identified is set as the preferred_term. The type is set to synonym.</li>
+		</ol>
+	<li>Context vectors of 5-words before and after the terms of interest are used in the same manner as TFxIDF vectors. This method is also discussed in (Heylen et al., 2008).
+		<ol type="a">
+			<li>These terms are not restricted to UMLS matches and currently the groups identified do not include cui&#8217;s.</li>
+			<li>The threshold for the cosine similarity measure is set by the context_thld argument. The default value is 0.95, which is necessary due to the small window and the current calculation, which does not take into account word position.
+				<ol type="i">
+					<li>Note: Next task is to change this.</li>
+				</ol>
+			</li>
+		</ol>
+	</li>
+	<li>The Lexico-Syntactic Patterns described in (Liu et al., 2011) are used on the text found between noun phrases in the ExplanationInfo table. The extraction of this table is described in 3d.
+		<ol type="a">
+			<li>Patterns matching the &#8220;other&#8221; patterns described in (Liu et al., 2011) are given the type &#8220;synonym&#8221; in the SynRelGroups table. Patterns match if they include the following sets of words (also known as, &#8220;(&#8220;, also called, aka, so called, also referred to, referred to), with or without other words.</li>
+			<li>Groups extracted using the Hearst patterns are typed as &#8220;is a&#8221; relations. (such as, or other, and other, including, associated with)</li>
+			<li>The Berland patterns are used to find &#8220;part of&#8221; relations. (in, of)</li>
+		</ol>
+	</li>
+	<li>The ASIUM clustering technique described in (Faure &amp; Poibeau, 2000) is used on each of the synonym, is a and part of sets of groups, separately. This combines groups whose membership falls within the threshold defined in asium_thld.</li>
+	<li>The concept hierarchy learning methods of (Cimiano &amp; Staab, 2005) are implemented using the &#8216;isa&#8217; groups resulting from step 9. These groups are decomposed into all possible pairs, which are clustered, with guidance from two hypernym oracles.
+		<ol type="a">
+			<li>The UMLS metathesaurus is used as a source of recognized hypernyms.</li>
+			<li>Next task: WordNet is used as a second source.</li>
+		</ol>
+	</li>
+</ol>
+<p>Adomavicius, G., &amp; Tuzhilin, A. (2005). Toward the next generation of recommender systems: a survey of the state-of-the-art and possible extensions. <i>Knowledge and Data Engineering, IEEE Transactions on</i>, <i>17</i>(6), 734&#8211;749. doi:10.1109/TKDE.2005.99</p>
+<p>Cimiano, P., &amp; Staab, S. (2005). Learning concept hierarchies from text with a guided hierarchical clustering algorithm. <i>ICML workshop on Learning and Extending Lexical Ontologies with Machine Learning Methods</i>, 6.</p>
+<p>Faure, D., &amp; Poibeau, T. (2000). First experiments of using semantic knowledge learned by ASIUM for information extraction task using INTEX. <i>Proceedings of the ECAI2000 Ontology Learning Workshop</i>.</p>
+<p>Frantzi, K., Ananiadou, S., &amp; Tsujii, J. (1998). The c-value/nc-value method of automatic recognition for multi-word terms. <i>Research and Advanced Technology for Digital Libraries</i>, 520&#8211;520.</p>
+<p>Heylen, K., Peirsman, Y., Geeraerts, D., &amp; Speelman, D. (2008). Modelling word similarity: an evaluation of automatic synonymy extraction algorithms. <i>Proceedings of the Sixth International Language Resources and Evaluation (LREC'08)</i>, 3243&#8211;3249.</p>
+<p>Liu, K., Chapman, W. W., Savova, G., Chute, C. G., Sioutos, N., &amp; Crowley, R. S. (2011). Effectiveness of Lexico-syntactic Pattern Matching for Ontology Enrichment with Clinical Documents. <i>Methods of information in medicine</i>, <i>50</i>(5), 397&#8211;407. doi:10.3414/ME10-01-0020</p>
+<p>Zeng, Q. T., Tse, T., Divita, G., Keselman, A., Crowell, J., Browne, A. C., Goryachev, S., et al. (2007). Term identification methods for consumer health vocabulary development. <i>Journal of Medical Internet Research</i>, <i>9</i>(1), e4.</p>
+	</div>
+    
+    <div id="nav_main">
+        <h4>The SEAM Project is sponsored by:</h4>
+        <img src="./images/Ulogo_sm.png" />
+    </div>
+    
+</div>
+
+<div id="footer">
+         <div id="copyright">&copy; SEAM Project - Site Design based on a template by <a href="http://sean-pollock.com" target="_blank">Sean Pollock</b></a> and <a href="http://zymic.com" target="_blank">Zymic</a>.
+</div>
+</body></html>

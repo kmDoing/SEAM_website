@@ -1,0 +1,40 @@
+@charset "utf-8";
+/* CSS Document */
+
+
+#navcont {
+	margin-left: 11px;
+}
+	
+
+
+#nav {
+	background: #48577c url('images/nav/nav_new.png') repeat-x;
+	width: 950px;
+	height: 42px;
+	margin-top: 24px;
+	list-style: none;
+	float: left;
+	}
+
+#nav li {
+	float: left;
+	font-weight:bold;
+	}
+	
+#nav a:link, #nav a:visited {
+	float: left;
+	line-height: 42px;
+	height: 42px;
+	display: block;
+	padding: 0 22px 0 22px;
+	color: #ffff;
+	text-decoration: none;
+	background: #48577c url('images/nav/nav_new.gif') repeat-x;
+	}
+
+#nav a:hover, #nav a:active {
+	text-decoration: underline;
+	background: #48577c url('images/nav/nav_hover.png') repeat-x;
+	}
+
